@@ -1,4 +1,3 @@
-# routes/plants.py
 from fastapi import APIRouter, HTTPException
 from configuration import secretENV
 from schema.global_schema import PlantRequest, PlantResponse
@@ -7,6 +6,11 @@ import google.generativeai as genai
 import json
 
 router = APIRouter()
+
+
+@router.get("/")
+async def read_root():
+    return {"message": "Welcome to the FastAPI application with MongoDB"}
 
 
 @router.post("/plant", response_model=PlantResponse)
@@ -45,7 +49,6 @@ async def get_plant_info(plant_request: PlantRequest):
     json_data = json.loads(response.text)
 
     if json_data.status_code == 200:
-
         plant_info = {
             "name": plant_name,
             "details": json_data["details"],
@@ -56,8 +59,5 @@ async def get_plant_info(plant_request: PlantRequest):
         }
         db.client.global_database.plant_details.insert_one(plant_info)
         return PlantResponse(**plant_info)
-
     else:
-        raise HTTPException(status_code=500, detail="Failed to get plant information ")
-
-
+        raise HTTPException(status_code=501, detail="Failed to get plant information")

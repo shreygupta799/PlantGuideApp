@@ -1,29 +1,18 @@
-
 from fastapi import FastAPI
 from configuration.config import connect_to_mongo, close_mongo_connection
-from routes.plants import router as plant_router
+from routes.plants import router
 
-
-app=FastAPI()
+app = FastAPI()
 
 @app.on_event("startup")
 async def startup_db_client():
-    await connect_to_mongo()
-
+    connect_to_mongo()
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-   await close_mongo_connection()
+    close_mongo_connection()
 
-app.include_router(plant_router, prefix="/api", tags=["plant"])
-
-
-@app.get("/")
-async def read_root():
-    return {"message": "Welcome to the FastAPI application with mongoDB"}
-
-
-
+app.include_router(router, prefix="/api", tags=["plants"])
 
 if __name__ == "__main__":
     import uvicorn
