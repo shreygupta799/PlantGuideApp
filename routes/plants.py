@@ -1,22 +1,15 @@
 # routes/plants.py
 from fastapi import APIRouter, HTTPException
-
-from config import secretENV
-from models.global_model import Plant
+from configuration import secretENV
 from schema.global_schema import PlantRequest, PlantResponse
-from config.config import db
+from configuration.config import db
 import google.generativeai as genai
-import requests
+import json
 
 router = APIRouter()
 
 
-
-#GEMINI_API_URL = "https://api.geminiAI.com/v1/getPlantInfo"
-
-
-
-@router.post("/plant")
+@router.post("/plant", response_model=PlantResponse)
 async def get_plant_info(plant_request: PlantRequest):
     plant_name = plant_request.name
     plant_data = db.client.global_database.plant_details.find_one({"name": plant_name})
@@ -47,22 +40,24 @@ async def get_plant_info(plant_request: PlantRequest):
 
     prompt = plant_info_template.format(plant_name=plant_name)
 
-    model = genai.GenerativeModel(name='gemini-1.5-flash')
+    model = genai.GenerativeModel(name='gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
     response = model.generate_content(prompt)
+    json_data = json.loads(response.text)
 
-    if response.status_code == 200:
-        result = response.json()
+    if json_data.status_code == 200:
+
         plant_info = {
             "name": plant_name,
-            "details": result["details"],
-            "sowing_season": result["sowing_season"],
-            "sowing_instructions": result["sowing_instructions"],
-            "care_instructions": result["care_instructions"],
-            "prerequisites": result["prerequisites"]
+            "details": json_data["details"],
+            "sowing_season": json_data["sowing_season"],
+            "sowing_instructions": json_data["sowing_instructions"],
+            "care_instructions": json_data["care_instructions"],
+            "prerequisites": json_data["prerequisites"]
         }
         db.client.global_database.plant_details.insert_one(plant_info)
         return PlantResponse(**plant_info)
 
     else:
         raise HTTPException(status_code=500, detail="Failed to get plant information ")
+
 
