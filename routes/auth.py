@@ -45,10 +45,11 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
 
 @router.post("/save_plant")
 async def save_plant(plant: PlantRequest, current_user: dict = Depends(get_current_user)):
-    #plant_dict = plant.dict()
+    logger.info(current_user)
+    plant_dict = plant.dict()
     db.client.global_database.saved_plant.update_one(
-        {"username": current_user["username"]},
-        {"$addToSet": {"saved_plants": plant}}
+        {"username": current_user.username},
+        {"$addToSet": {"saved_plants": plant_dict}}
     )
     return {"message": "Plant information saved successfully"}
 
