@@ -9,17 +9,17 @@ import logging
 
 
 
-router = APIRouter()
+routerPlant = APIRouter()
 
 
-@router.get("/")
+@routerPlant.get("/")
 async def read_root():
     logger.info("Root endpoint called")
     print("Roots endpoint called")
     return {"message": "Welcome to the FastAPI application with MongoDB"}
 
 
-@router.post("/plant", response_model=PlantResponse)
+@routerPlant.post("/plant", response_model=PlantResponse)
 async def get_plant_info(plant_request: PlantRequest):
     plant_name = plant_request.name
     logger.info(f"Received request for plant: {plant_name}")

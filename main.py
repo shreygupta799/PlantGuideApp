@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from configuration.config import connect_to_mongo, close_mongo_connection
-from routes.plants import router
+from routes.plants import routerPlant
 from routes.auth import router
 
 app = FastAPI()
 
 
-app.include_router(router, prefix="/api", tags=["plants"])
+app.include_router(routerPlant,tags=["plants"])
 app.include_router(router, tags=["auth"])
 
 @app.on_event("startup")
