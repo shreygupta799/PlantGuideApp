@@ -27,6 +27,12 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 @router.post("/register", response_model=Saved)
 async def register_user(user: Register):
+    existing_user = db.client.global_database.saved_plant.find_one({"username": user.username})
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User already exists"
+        )
     hashed_password = get_password_hash(user.password)
     user_data = {
         "username": user.username,
@@ -49,7 +55,7 @@ async def save_plant(plant: PlantRequest, current_user: dict = Depends(get_curre
     plant_dict = plant.dict()
     db.client.global_database.saved_plant.update_one(
         {"username": current_user.username},
-        {"$addToSet": {"saved_plants": plant_dict}}
+        {"$addToSet": {"saved_plants": plant_dict.get("name")}}
     )
     return {"message": "Plant information saved successfully"}
 

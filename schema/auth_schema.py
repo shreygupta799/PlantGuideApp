@@ -18,7 +18,7 @@ class Token(BaseModel):
     
 class Saved(BaseModel):
     username: str
-    saved_plant: List[PlantRequest]=[]
+    saved_plant: List[str]
     password:str
     full_name:str
     

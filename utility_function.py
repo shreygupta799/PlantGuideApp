@@ -96,7 +96,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     if user is None:
         logging.error(f"User not found in database for username: {username}")
         raise credentials_exception
-    return Saved(**user)
+    
+    return Saved(username=user['username'], saved_plant=user['saved_plants'], full_name=user['full_name'], password=user['password'])
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
