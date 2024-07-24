@@ -25,9 +25,10 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/register", response_model=Saved)
+@router.post("/register")
 async def register_user(user: Register):
-    existing_user = db.client.global_database.saved_plant.find_one({"username": user.username})
+    existing_user = await db.client.global_database.saved_plant.find_one({"username": user.username})
+    logger.info(existing_user)
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -40,7 +41,8 @@ async def register_user(user: Register):
         "password": hashed_password,
         "saved_plants": [],
     }
-    db.client.global_database.saved_plant.insert_one(user_data)
+    result=await db.client.global_database.saved_plant.insert_one(user_data)
+    user_data['_id'] = str(result.inserted_id)
     return user_data
 
 
@@ -53,7 +55,7 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
 async def save_plant(plant: PlantRequest, current_user: dict = Depends(get_current_user)):
     logger.info(current_user)
     plant_dict = plant.dict()
-    db.client.global_database.saved_plant.update_one(
+    await db.client.global_database.saved_plant.update_one(
         {"username": current_user.username},
         {"$addToSet": {"saved_plants": plant_dict.get("name")}}
     )
