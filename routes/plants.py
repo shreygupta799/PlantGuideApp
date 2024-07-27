@@ -77,10 +77,30 @@ async def get_plant_info(plant_request: PlantRequest):
     await db.client.global_database.plant_details.insert_one(plant_info)
     logger.info(f"Inserted plant information for {plant_name} into database")
     return PlantResponse(**plant_info)
-    
-        #logger.error(f"Failed to get plant information from GeminiAI, status code: {response.text.status_code}")
-        #raise HTTPException(status_code=501, detail="Failed to get plant information from GeminiAI")
 
+
+@routerPlant.get("/funfact")
+async def get_fun_fact():
+    
+    # Create a prompt for the Gemini model
+    funfact_template = """
+    Generate a fun fact about plantation, plants, or farming. The fun fact should be concise and informative, ideally two or three lines long.
+    """
+    
+    genai.configure(api_key=secretENV.API_KEY)
+
+
+    model = genai.GenerativeModel('gemini-1.5-flash',generation_config={"response_mime_type": "application/json"})
+    response =  model.generate_content(funfact_template)
+
+    #try:
+    response = json.loads(response.text)
+    # Log the generated fun fact
+    logger.info(f"Generated fun fact: {response}")
+    
+    return {"fun_fact": response}
+    
+      
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
